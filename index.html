@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EngageLab MA - 需求 PRD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1c2128 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .container { max-width: 800px; width: 100%; }
+        .header { text-align: center; margin-bottom: 48px; }
+        .header .badge {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #58a6ff;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            border-radius: 20px;
+            padding: 4px 12px;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            color: #e6edf3;
+            margin-bottom: 10px;
+        }
+        .header p { font-size: 15px; color: rgba(230,237,243,0.5); }
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(230,237,243,0.35);
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+        .cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+        .card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 22px 24px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .card:hover {
+            background: rgba(88,166,255,0.07);
+            border-color: rgba(88,166,255,0.3);
+            transform: translateX(3px);
+        }
+        .card-icon {
+            font-size: 26px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+        .card-content { flex: 1; }
+        .card-content h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 4px;
+        }
+        .card-content p {
+            font-size: 13px;
+            color: rgba(230,237,243,0.45);
+            line-height: 1.5;
+        }
+        .card-arrow {
+            font-size: 16px;
+            color: rgba(230,237,243,0.2);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .card:hover .card-arrow { color: #58a6ff; transform: translateX(3px); }
+        @media (max-width: 600px) {
+            .card { padding: 16px 18px; gap: 14px; }
+            .card-icon { width: 40px; height: 40px; font-size: 20px; }
+            .header h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">Internal · PRD</div>
+            <h1>EngageLab MA 需求文档</h1>
+            <p>产品需求规格说明 · 仅供内部查阅</p>
+        </div>
+
+        <div class="section-title">功能需求 PRD</div>
+        <div class="cards">
+            <a class="card" href="./user-attributes/">
+                <div class="card-icon">🏷️</div>
+                <div class="card-content">
+                    <h2>用户属性 Object 类型扩展（AoO）</h2>
+                    <p>用户属性多值对象类型的产品需求方案</p>
+                </div>
+                <div class="card-arrow">→</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

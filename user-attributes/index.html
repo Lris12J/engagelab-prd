@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EngageLab MA · 用户属性 Object / Object Array 扩展 · 需求方案 V1</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f7f8fa;
+      --bg-elev: #ffffff;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --text: #111827;
+      --text-2: #374151;
+      --text-3: #6b7280;
+      --text-4: #9ca3af;
+      --accent: #5e6bfa;
+      --accent-soft: #eef0ff;
+      --accent-strong: #4b56d8;
+      --success: #16a34a;
+      --success-soft: #dcfce7;
+      --warning: #d97706;
+      --warning-soft: #fef3c7;
+      --info: #0369a1;
+      --info-soft: #e0f2fe;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --purple: #7c3aed;
+      --purple-soft: #ede9fe;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 1px 2px rgba(16,24,40,0.04);
+      --shadow-md: 0 4px 12px rgba(16,24,40,0.08);
+      --sidebar-w: 240px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg-soft); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+      line-height: 1.7; -webkit-font-smoothing: antialiased; font-size: 15px;
+      scroll-behavior: smooth; }
+    html { scroll-padding-top: 16px; }
+
+    .layout { display: flex; max-width: 1480px; margin: 0 auto; gap: 28px; padding: 24px 24px 64px; }
+    .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 16px;
+      align-self: flex-start; max-height: calc(100vh - 32px); overflow-y: auto;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px 14px; box-shadow: var(--shadow); font-size: 13.5px; }
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+    .sidebar-title { font-size: 12px; font-weight: 600; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 8px; margin-bottom: 6px; }
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+    .sidebar-nav li { margin: 1px 0; }
+    .sidebar-nav a { display: flex; align-items: flex-start; gap: 8px;
+      padding: 6px 10px; border-radius: 6px; color: var(--text-2); text-decoration: none; line-height: 1.4; }
+    .sidebar-nav a:hover { background: var(--bg-soft); color: var(--text); }
+    .sidebar-nav a.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 500; }
+    .sidebar-nav a .num { color: var(--text-4); font-size: 12px; min-width: 30px; font-family: "SF Mono", Menlo, monospace; }
+    .sidebar-nav a.sub { padding-left: 28px; font-size: 13px; color: var(--text-3); }
+    .sidebar-nav a.sub:hover { color: var(--text-2); }
+    .sidebar-nav a.sub.active { color: var(--accent-strong); background: transparent; font-weight: 500; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 8px 4px; border: none; }
+    .content { flex: 1; min-width: 0; }
+    main { max-width: 100%; margin: 0; padding: 0; }
+
+    h1 { font-size: 30px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; color: var(--text); }
+    h2 { font-size: 24px; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.005em; color: var(--text); padding-bottom: 10px; border-bottom: 2px solid var(--border); scroll-margin-top: 16px; }
+    h2 .h2-sub { font-size: 13px; font-weight: 400; color: var(--text-3); margin-left: 10px; letter-spacing: 0; }
+    h3 { font-size: 18px; font-weight: 600; margin: 22px 0 12px; color: var(--text); scroll-margin-top: 16px; }
+    h4 { font-size: 15px; font-weight: 600; margin: 16px 0 10px; color: var(--text); }
+    p { margin: 0 0 10px; color: var(--text-2); }
+    ul, ol { margin: 6px 0 12px; padding-left: 22px; color: var(--text-2); }
+    li { margin-bottom: 4px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .muted { color: var(--text-3); }
+    .small { font-size: 13px; }
+    .em { color: var(--text); font-weight: 600; }
+    code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.9em;
+      background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); color: var(--text-2); }
+    pre { background: #1e293b; color: #e2e8f0; padding: 16px 18px; border-radius: var(--radius);
+      overflow-x: auto; font-size: 13px; line-height: 1.55; margin: 8px 0 16px; }
+    pre code { background: none; border: none; padding: 0; color: inherit; }
+    blockquote { margin: 12px 0; padding: 10px 16px; border-left: 3px solid var(--accent);
+      background: var(--accent-soft); color: var(--text-2); border-radius: 0 6px 6px 0; font-size: 14px; }
+    blockquote p { margin: 4px 0; color: var(--text-2); }
+
+    .section { background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 26px 30px; margin-bottom: 22px; }
+
+    .hero { background: linear-gradient(135deg, #1e3a5f 0%, #4b56d8 50%, #7c3aed 100%);
+      border-radius: 14px; padding: 40px 36px 32px; margin-bottom: 22px; color: #fff; position: relative; overflow: hidden; }
+    .hero::after { content: ''; position: absolute; top: -50%; right: -20%; width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%); }
+    .hero h1 { color: #fff; font-size: 32px; margin-bottom: 8px; }
+    .hero-sub { color: rgba(255,255,255,0.85); font-size: 15px; max-width: 780px; }
+    .hero-meta { display: flex; gap: 24px; margin-top: 18px; flex-wrap: wrap; }
+    .hero-meta-item { font-size: 13px; color: rgba(255,255,255,0.65); }
+    .hero-meta-item span { color: #fff; font-weight: 600; }
+    .hero-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .pill { display: inline-flex; align-items: center; padding: 2px 10px;
+      font-size: 12px; border-radius: 999px; border: 1px solid var(--border-strong);
+      color: var(--text-2); background: #fff; font-weight: 500; }
+    .pill-accent { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .pill-info { background: var(--info-soft); border-color: var(--info); color: var(--info); }
+    .pill-success { background: var(--success-soft); border-color: var(--success); color: var(--success); }
+    .pill-warn { background: var(--warning-soft); border-color: var(--warning); color: var(--warning); }
+    .pill-purple { background: var(--purple-soft); border-color: var(--purple); color: var(--purple); }
+    .pill-hero { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #fff; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .scene-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .scene-card { padding: 14px 16px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; }
+    .scene-card h4 { margin: 0 0 6px; font-size: 14px; }
+    .scene-card p { margin: 0; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; border: none; }
+
+    table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px; }
+    table thead th { background: var(--bg-soft); padding: 10px 12px; text-align: left;
+      font-weight: 600; color: var(--text-2); border: 1px solid var(--border); font-size: 13px; }
+    table tbody td { padding: 10px 12px; border: 1px solid var(--border); vertical-align: top; color: var(--text-2); }
+    table tbody tr:hover td { background: #fafbfc; }
+
+    .ui-spec { margin: 20px 0; padding: 0; border: 2px solid var(--accent-soft);
+      border-radius: 12px; overflow: hidden; background: #fafbff; }
+    .ui-spec-header { background: linear-gradient(90deg, #eef0ff 0%, #f8f9ff 100%);
+      padding: 10px 18px; border-bottom: 1px solid var(--accent-soft);
+      display: flex; align-items: center; gap: 8px; font-size: 13px;
+      font-weight: 600; color: var(--accent-strong); }
+    .ui-spec-header::before { content: '◆'; font-size: 11px; color: var(--accent); }
+    .ui-spec-header .badge-tag { font-size: 11px; padding: 1px 8px;
+      background: var(--accent); color: #fff; border-radius: 10px; margin-left: 8px; font-weight: 500; }
+    .ui-spec-body { padding: 18px 20px; }
+    .ui-spec-title { font-size: 14px; font-weight: 600; color: var(--text-2); margin: 12px 0 8px; }
+    .ui-spec-title:first-child { margin-top: 0; }
+    .ui-spec-desc { font-size: 13px; color: var(--text-3); margin-bottom: 10px; }
+
+    .mock { background: #fafbfc; border: 1px dashed var(--border-strong);
+      border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; }
+    .mock:last-child { margin-bottom: 0; }
+    .mock-label { font-size: 11px; color: var(--text-3); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 10px; font-weight: 600; }
+    .mock-canvas { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+
+    .ant-section-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .ant-radio-row { display: flex; align-items: flex-start; margin-bottom: 6px; }
+    .ant-radio { width: 16px; height: 16px; border: 1px solid #d9dfe8; border-radius: 50%;
+      margin-right: 8px; flex-shrink: 0; margin-top: 4px; background: #fff; position: relative; }
+    .ant-radio.checked { border-color: var(--accent); }
+    .ant-radio.checked::after { content: ''; position: absolute; inset: 3px; background: var(--accent); border-radius: 50%; }
+    .ant-radio-label { font-size: 14px; color: rgba(37,48,68,0.84); padding-top: 2px; }
+    .ant-radio-tag { display: inline-block; padding: 1px 8px; font-size: 11px;
+      background: var(--purple-soft); border-radius: 10px; color: var(--purple); font-weight: 500; margin-left: 6px; }
+    .ant-radio-tag.gray { background: #f0f2f5; color: var(--text-3); }
+    .ant-form-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .ant-form-row:last-child { margin-bottom: 0; }
+    .ant-form-row-label { font-size: 13px; color: rgba(37,48,68,0.84); min-width: 70px; }
+    .ant-form-row-label .req { color: var(--danger); margin-right: 2px; }
+    .ant-input { background: #fff; border: 1px solid #d9dfe8; border-radius: 6px;
+      padding: 5px 11px; height: 32px; font-size: 13px; color: var(--text); min-width: 80px; outline: none; }
+    .ant-input.num { width: 90px; }
+    .ant-input.lg { min-width: 280px; }
+    .ant-select { display: inline-flex; align-items: center; justify-content: space-between;
+      gap: 8px; height: 32px; padding: 0 11px; border: 1px solid #d9dfe8; border-radius: 6px;
+      background: #fff; font-size: 13px; color: var(--text); min-width: 100px; }
+    .ant-select.lg { min-width: 200px; }
+    .ant-select::after { content: '▾'; color: var(--text-4); font-size: 10px; margin-left: 8px; }
+    .ant-checkbox { width: 14px; height: 14px; border: 1px solid #d9dfe8; border-radius: 3px;
+      display: inline-block; vertical-align: middle; margin-right: 8px; background: #fff; position: relative; flex-shrink: 0; }
+    .ant-checkbox.checked { background: var(--accent); border-color: var(--accent); }
+    .ant-checkbox.checked::after { content: '✓'; color: #fff; font-size: 10px; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .ant-divider { height: 1px; background: var(--border); margin: 12px 0; }
+    .ant-btn { height: 32px; padding: 0 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #d9dfe8; background: #fff; color: var(--text-2); }
+    .ant-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .ant-alert { padding: 10px 14px; border-radius: 8px; font-size: 13px;
+      display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+    .ant-alert-info { background: #e6f4ff; border: 1px solid #91caff; color: #003a8c; }
+    .ant-alert-warning { background: var(--warning-soft); border: 1px solid #fde68a; color: #92400e; }
+    .ant-alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .ant-alert-body { line-height: 1.6; }
+
+    .var-modal { max-width: 580px; margin: 0 auto; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.12); overflow: hidden; }
+    .var-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .var-modal-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .var-modal-close { color: var(--text-4); font-size: 16px; cursor: pointer; }
+    .var-modal-body { padding: 18px 20px; }
+    .var-field { margin-bottom: 16px; }
+    .var-field-label { font-size: 13px; font-weight: 500; color: rgba(37,48,68,0.84); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .var-field-label-badge { font-size: 11px; padding: 1px 6px; background: #f4f6f9; border-radius: 10px; color: rgba(37,48,68,0.52); font-weight: 400; }
+    .var-field-label-row { justify-content: space-between; }
+    .var-cascader { display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 11px; border: 1px solid #d9dfe8; border-radius: 6px; background: #fff;
+      font-size: 13px; color: var(--text-3); cursor: pointer; }
+    .var-cascader-active { color: var(--text); }
+    .var-cascader::after { content: '▾'; color: var(--text-4); font-size: 10px; }
+    .var-preview { min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+      background: #f7f8fa; border-radius: 6px; font-family: "SF Mono", Menlo, monospace;
+      font-size: 12.5px; color: rgba(37,48,68,0.84); word-break: break-all; }
+    .var-preview-text { flex: 1; }
+    .var-add-btn { color: var(--accent); font-size: 13px; cursor: pointer; font-weight: 500; }
+
+    .op-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .op-row .ant-select { min-width: 110px; }
+    .op-row .ant-input { min-width: 60px; flex: 1; }
+    .op-row .rm { color: var(--danger); cursor: pointer; font-size: 16px; flex-shrink: 0; }
+    .op-row.muted-row { opacity: 0.45; }
+
+    .st { width: 100%; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 12px; margin-bottom: 6px; border-collapse: collapse; }
+    .st th { background: var(--bg-soft); padding: 8px 10px; font-weight: 600; color: var(--text-2); font-size: 12px; border-bottom: 1px solid var(--border); text-align: left; }
+    .st td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+    .st tr:last-child td { border-bottom: none; }
+    .st input, .st select { width: 100%; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; background: #fff; }
+
+    .badge { display: inline-flex; align-items: center; padding: 0 8px; height: 22px;
+      border-radius: 11px; font-size: 12px; font-weight: 500; vertical-align: middle; }
+    .badge-new { background: var(--success-soft); color: var(--success); }
+    .badge-change { background: var(--warning-soft); color: var(--warning); }
+    .badge-keep { background: #f4f6f9; color: var(--text-3); }
+
+    .push-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .push-row .ant-input { flex: 1; }
+    .var-inserted { flex: 1; border: 1px solid var(--accent); border-radius: 6px; padding: 5px 11px;
+      font-size: 12px; background: var(--accent-soft); color: var(--accent-strong);
+      font-family: "SF Mono", Menlo, monospace; display: flex; align-items: center; gap: 4px; }
+    .var-inserted::before { content: '⌘'; font-size: 9px; }
+
+    /* 级联选择器仿真 */
+    .cascader-pop { background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: var(--shadow-md); display: flex; max-width: 720px; }
+    .cascader-col { width: 200px; border-right: 1px solid var(--border); padding: 6px 0; max-height: 260px; overflow-y: auto; }
+    .cascader-col:last-child { border-right: 0; }
+    .cascader-item { padding: 6px 14px; font-size: 13px; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+    .cascader-item:hover { background: var(--bg-soft); }
+    .cascader-item.active { background: var(--accent-soft); color: var(--accent); }
+    .cascader-item-arrow { color: var(--text-4); font-size: 10px; }
+    .cascader-item .desc { color: var(--text-4); font-size: 11px; margin-left: 6px; }
+
+    @media (max-width: 1100px) {
+      .layout { flex-direction: column; padding: 16px; }
+      .sidebar { width: 100%; position: static; max-height: none; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      .layout { display: block; }
+      .sidebar { display: none; }
+      .section, .ui-spec, .mock { break-inside: avoid; }
+      .hero { background: #4b56d8 !important; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ═══════════════ 侧边目录 ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-title">目录</div>
+    <ul class="sidebar-nav" id="toc-nav">
+      <li><a href="#sec-1"><span class="num">1</span>背景与目标</a></li>
+      <li><a href="#sec-2"><span class="num">2</span>名词定义</a></li>
+      <li><a href="#sec-3"><span class="num">3</span>用户场景</a></li>
+      <li><a href="#sec-4"><span class="num">4</span>功能需求</a></li>
+      <li><a href="#sec-4.1" class="sub"><span class="num">4.1</span>属性类型与子字段定义</a></li>
+      <li><a href="#sec-4.2" class="sub"><span class="num">4.2</span>数据上报与更新</a></li>
+      <li><a href="#sec-4.3" class="sub"><span class="num">4.3</span>条件筛选 · 同对象匹配</a></li>
+      <li><a href="#sec-4.4" class="sub"><span class="num">4.4</span>变量操作链</a></li>
+      <li><a href="#sec-4.5" class="sub"><span class="num">4.5</span>附加字段可视化插入变量</a></li>
+      <li><a href="#sec-4.6" class="sub"><span class="num">4.6</span>用户详情页展示</a></li>
+      <li><a href="#sec-5"><span class="num">5</span>Liquid 操作链参考</a></li>
+      <li><a href="#sec-6"><span class="num">6</span>竞品参考</a></li>
+      <li><a href="#sec-7"><span class="num">7</span>技术实现要点</a></li>
+      <hr class="sidebar-divider" />
+      <li><a href="#sec-8"><span class="num">8</span>P0 / P1 范围</a></li>
+      <li><a href="#sec-9"><span class="num">附</span>待确认事项</a></li>
+    </ul>
+  </aside>
+
+  <!-- ═══════════════ 主内容 ═══════════════ -->
+  <div class="content">
+  <main>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <div class="hero">
+    <div class="hero-pills">
+      <span class="pill pill-hero">PRD · V1</span>
+      <span class="pill pill-hero">Object / Object Array</span>
+      <span class="pill pill-hero">需求 + UI 设计稿</span>
+      <span class="pill pill-hero">EngageLab MA</span>
+    </div>
+    <h1>用户属性 Object / Object Array 扩展</h1>
+    <p class="hero-sub">
+      用户属性体系从 5 种基础类型扩展为 7 种，新增 OBJECT 与 OBJECT_ARRAY 类型，支持一对多结构化数据的存储与查询。
+      覆盖"用户 × 多设备""用户 × 多订单"等场景，复用现有 Liquid 操作链做变量取值，改动控制在最小范围。
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">文档版本 · <span>V1</span></div>
+      <div class="hero-meta-item">设计原则 · <span>底层 Liquid · UI 可视化 · 运营零代码</span></div>
+      <div class="hero-meta-item">更新日期 · <span>2026-06-08</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ §1 背景与目标 ═══════════════ -->
+  <div class="section" id="sec-1">
+    <h2>1. 背景与目标</h2>
+
+    <h3>1.1 背景</h3>
+    <p>
+      EngageLab MA 当前用户属性支持 5 种基础类型：<code>STRING</code>、<code>NUMBER</code>、<code>BOOL</code>、<code>DATETIME</code>、<code>LIST</code>。
+      随着客户业务复杂度提升，出现大量"一个用户关联多个结构化子实体"的诉求，典型如：
+    </p>
+    <ul>
+      <li><strong>智能安防</strong>：一个用户绑定多台摄像头，每台有独立的 device_id、mac、型号（如 A31S_AK_IPC、VI_STREAM 等）、激活时间、AI 套餐状态。</li>
+      <li><strong>电商</strong>：一个用户有多个收货地址、多张优惠券、多笔订单。</li>
+      <li><strong>SaaS</strong>：一个用户加入多个工作空间，各自有不同角色和订阅状态。</li>
+    </ul>
+    <p>
+      当前用 <code>LIST</code> 类型存储多设备 mac 列表虽可行，但多个扁平 LIST 之间无法保证<strong>同对象关联</strong>——
+      例如筛选"型号为 A31S_AK_IPC 且 激活时间在 2026 年"的设备时，可能跨设备错配（条件 A 命中了设备 1，条件 B 命中了设备 2，但实际上没有任何一台设备同时满足两个条件），导致分群结果不准确。
+      这是当前架构的根本性局限。
+    </p>
+
+    <h3>1.2 目标</h3>
+    <ol>
+      <li>新增 <code>OBJECT</code> 与 <code>OBJECT_ARRAY</code> 两种用户属性数据类型，支持结构化 JSON 数据的存储，并在属性定义时对子字段进行预定义。</li>
+      <li>条件筛选支持对象数组子字段的<strong>同对象匹配</strong>语义，解决扁平 LIST 的跨对象错配问题。</li>
+      <li>复用现有 Liquid 操作链模式做变量取值，<strong>不发明新交互</strong>，仅在操作下拉中新增若干选项。</li>
+      <li>最大化复用现有能力（编辑变量弹窗、旅程筛选器、属性预定义流程），把改动控制在最小范围。</li>
+    </ol>
+
+    <h3>1.3 设计原则</h3>
+    <blockquote>
+      <p><strong>底层 Liquid · UI 可视化 · 运营零代码</strong></p>
+      <p>所有取值逻辑最终都是 Liquid 表达式（<code>where / map / json / sort / first</code> 等），UI 只是让运营通过下拉选择来组合操作链，预览区实时生成 Liquid，不需要手写代码。</p>
+    </blockquote>
+
+    <h3>1.4 筛选与变量的区别</h3>
+    <p>本方案涉及两种不同场景，引擎和能力边界不同，需注意区分：</p>
+    <table>
+      <thead>
+        <tr><th width="20%">场景</th><th width="35%">属性筛选（旅程条件）</th><th>属性变量（消息取值）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>引擎</td><td>服务端查询引擎</td><td>Liquid 模板引擎</td></tr>
+        <tr><td>选择粒度</td><td>选到<strong>子字段</strong>（级联选择器第三级）</td><td>OBJECT_ARRAY：选到<strong>属性本身</strong>，然后用操作链处理<br>OBJECT：选到<strong>子字段</strong>（单个对象无需 where / map）</td></tr>
+        <tr><td>运算符范围</td><td>子字段类型对应的<strong>全部运算符</strong>（等于/大于/小于/包含/正则/时间范围等）</td><td><code>where</code> 仅支持<strong>等值过滤</strong>（Liquid 语言限制，无法扩展）</td></tr>
+        <tr><td>数据类型限制</td><td>无限制，各类型运算符齐全</td><td>DATETIME / NUMBER 的大于小于等比较无法在 <code>where</code> 中使用，需在旅程筛选层面提前过滤</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ §2 名词定义 ═══════════════ -->
+  <div class="section" id="sec-2">
+    <h2>2. 名词定义</h2>
+    <table>
+      <thead>
+        <tr><th style="width:26%">术语</th><th>定义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="em">OBJECT 属性</span></td><td>值为单个 JSON 对象的用户属性，如 <code>{"city": "上海", "level": "VIP"}</code>。创建时需要预定义子字段（字段名与类型）。</td></tr>
+        <tr><td><span class="em">OBJECT_ARRAY 属性（对象数组）</span></td><td>值为 JSON 对象数组的用户属性，如 <code>[{device_id, mac, ...}, ...]</code>。数组中每个对象结构相同，共用同一套子字段预定义。</td></tr>
+        <tr><td><span class="em">同对象匹配</span></td><td>在对象数组上做多条件筛选时，所有条件必须命中<strong>同一个对象</strong>，不允许跨对象错配。</td></tr>
+        <tr><td><span class="em">识别字段（Identifier Key）</span></td><td>对象数组中每个对象的唯一标识字段（如 <code>device_id</code>），可选配置。设置后 P1 启用细粒度增删改。</td></tr>
+        <tr><td><span class="em">操作链</span></td><td>编辑变量弹窗中，运营通过链式叠加操作（<code>where → map → json</code>）组合 Liquid 表达式的交互模式。现有能力，本方案直接复用。</td></tr>
+        <tr><td><span class="em">子字段预定义</span></td><td>创建 OBJECT / OBJECT_ARRAY 属性时，预先定义其内部子字段的名称和类型。与现有属性预定义流程一致，扩展为支持子字段定义。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ §3 用户场景 ═══════════════ -->
+  <div class="section" id="sec-3">
+    <h2>3. 用户场景</h2>
+    <div class="scene-grid">
+      <div class="scene-card">
+        <h4><span class="pill pill-purple">核心</span> Push 跳转设备播放页</h4>
+        <p class="small">旅程筛选 devices 有 A31S_AK_IPC 型号 → 推送 → 附加字段带 <code>device_id</code> → 客户端跳转该设备播放页。
+          操作链：<code>where → sort → reverse → map → first</code></p>
+      </div>
+      <div class="scene-card">
+        <h4><span class="pill pill-purple">核心</span> InApp 按设备组展示内容</h4>
+        <p class="small">旅程筛选 activated_year=2024 → 附加字段带 <code>target_macs</code>（JSON 数组）→ 客户端按 mac 列表决定展示内容。
+          操作链：<code>where → map → json</code></p>
+      </div>
+      <div class="scene-card">
+        <h4><span class="pill pill-accent">扩展</span> 多设备用户分流</h4>
+        <p class="small">旅程条件分支 → devices 对象数 &gt; 1 → 多设备文案分支 vs 单设备分支。在旅程层面处理，不需要变量取值。</p>
+      </div>
+      <div class="scene-card">
+        <h4><span class="pill pill-accent">扩展</span> 设备到期提醒</h4>
+        <p class="small">筛选 AI 套餐到期时间在 7 日内的设备 → 推送提醒 → 附加字段带过期设备列表。运营在编辑变量中叠加多个 <code>where</code> 条件。</p>
+      </div>
+    </div>
+
+    <h4>客户详细场景（视洞 · 智能安防）</h4>
+    <p>用户有 4 台设备：卧室（26 年激活 + AI 套餐）、花园（26 年 + 无 AI）、厨房（24 年 + AI）、书房（24 年 + AI）。</p>
+    <ul>
+      <li><strong>旅程分支 1</strong>：activated_year=2026 且 has_ai_package=true → 匹配卧室 → 推送 A 内容</li>
+      <li><strong>旅程分支 2</strong>：activated_year=2026 且 has_ai_package=false → 匹配花园 → 推送 B 内容</li>
+      <li><strong>旅程分支 3</strong>：activated_year=2024 且 has_ai_package=true → 匹配厨房 + 书房 → 附加字段 <code>target_macs = {{ devices | where: 'activated_year', '2024' | where: 'has_ai_package', true | map: 'mac' | json }}</code> → 客户端收到 <code>["33:44:33","44:55:44"]</code> → 展示 C 内容</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════ §4 功能需求 ═══════════════ -->
+  <div class="section" id="sec-4">
+    <h2>4. 功能需求</h2>
+    <p>共 5 个改造点。已有能力均保持不动，仅做扩展。</p>
+    <table>
+      <thead>
+        <tr><th width="5%">#</th><th width="28%">改造点</th><th>说明</th><th width="10%">优先级</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>4.1</td><td>属性类型与子字段定义</td><td>数据类型新增 OBJECT / OBJECT_ARRAY + 创建属性时预定义子字段</td><td><span class="badge badge-new">P0</span></td></tr>
+        <tr><td>4.2</td><td>数据上报与更新</td><td>SDK / REST API 支持 JSON 对象写入，子字段校验，复用现有 API 规范</td><td><span class="badge badge-new">P0</span></td></tr>
+        <tr><td>4.3</td><td>条件筛选 · 同对象匹配</td><td>旅程条件分支、开始组件用户特征、事件触发属性筛选均支持对象数组子字段的同对象匹配</td><td><span class="badge badge-new">P0</span></td></tr>
+        <tr><td>4.4</td><td>变量操作链</td><td>编辑变量弹窗中配置操作链，使用已有 Liquid 操作实现对象数组取值</td><td><span class="badge badge-keep">P0 已有能力</span></td></tr>
+        <tr><td>4.5</td><td>附加字段可视化插入变量</td><td>Push 附加字段的 value 输入框增加可视化「选择变量」操作</td><td><span class="badge badge-change">P0 扩展</span></td></tr>
+        <tr><td>4.6</td><td>用户详情页展示</td><td>用户详情页对 OBJECT / OBJECT_ARRAY 属性的展示交互</td><td><span class="badge badge-new">P0</span></td></tr>
+      </tbody>
+    </table>
+
+    <!-- ────── §4.1 属性类型与子字段定义 ────── -->
+    <h3 id="sec-4.1">4.1 属性类型与子字段定义</h3>
+    <p>在现有「创建用户属性」流程基础上追加。<code>UserAttributeDataType</code> 枚举新增 <code>OBJECT(6)</code> 与 <code>OBJECT_ARRAY(7)</code>。</p>
+    <table>
+      <thead>
+        <tr><th>变化点</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>数据类型新增 2 项</td><td><code>OBJECT(6)</code> 与 <code>OBJECT_ARRAY(7)</code></td></tr>
+        <tr><td>子字段预定义区域</td><td>选中 OBJECT / OBJECT_ARRAY 时，创建属性页面下方展开子字段定义表格（复用现有属性预定义的交互模式）</td></tr>
+        <tr><td>子字段类型范围</td><td><code>STRING / NUMBER / BOOL / DATETIME / LIST</code>（子字段可以是 LIST，不允许是 OBJECT 或 OBJECT_ARRAY，限 1 层嵌套）</td></tr>
+        <tr><td>识别字段（可选）</td><td>OBJECT_ARRAY 的子字段表格中增加「唯一」勾选列，仅允许勾选 1 个。设置后写入时校验唯一性，P1 启用细粒度增删改</td></tr>
+      </tbody>
+    </table>
+
+    <h4>自动创建处理</h4>
+    <p>MA 当前支持两种属性创建方式：<strong>手动预定义创建</strong>和<strong>API 上报时自动创建</strong>（<code>UserPropertyService.doSetUserProperty()</code> 中，属性不存在时通过 <code>DataCommonUtils.matchValueDataType()</code> 推断类型并调用 <code>saveBatch()</code> 自动创建）。对于 OBJECT / OBJECT_ARRAY 类型：</p>
+    <ul>
+      <li><strong>手动预定义</strong>：在创建属性页面选择类型并定义子字段，流程与现有一致。</li>
+      <li><strong>API 自动创建</strong>：需扩展 <code>DataCommonUtils.matchValueDataType()</code> 的推断逻辑——当值为 <code>Map</code> 类型时推断为 OBJECT，当值为 <code>List&lt;Map&gt;</code> 时推断为 OBJECT_ARRAY。子字段定义从首次上报的数据中推断（遍历对象的 key-value，按现有规则推断各子字段类型）。后续上报如果出现新的子字段，自动追加到定义中。</li>
+    </ul>
+    <p class="muted small">
+      注意：现有属性数量上限为 256 个/项目（<code>user-attribute-upper-limit: 256</code>），OBJECT / OBJECT_ARRAY 属性计入此总数。自动创建超限时 <code>saveBatch()</code> 返回 0（静默失败），与现有行为一致。
+    </p>
+
+    <div class="ui-spec">
+      <div class="ui-spec-header">
+        UI 设计稿 · 创建用户属性（点击数据类型切换查看）
+        <span class="badge-tag">A-1</span>
+      </div>
+      <div class="ui-spec-body">
+        <div class="ui-spec-desc">实现位置：用户属性管理页 → 创建 / 编辑属性页面。选中 OBJECT 或 OBJECT_ARRAY 后展开子字段预定义区域。<strong>点击下方数据类型可切换查看不同选择的效果。</strong></div>
+
+        <div class="mock">
+          <div class="mock-label">目标态 · 点击 OBJECT / OBJECT_ARRAY 切换</div>
+          <div class="mock-canvas" id="create-attr-mock">
+            <div class="ant-section-title">创建用户属性</div>
+
+            <div class="ant-form-row">
+              <span class="ant-form-row-label"><span class="req">*</span> 属性名称</span>
+              <span class="ant-input lg" style="display:inline-block;" id="attr-name-input">devices</span>
+            </div>
+            <div class="ant-form-row">
+              <span class="ant-form-row-label">属性描述</span>
+              <span class="ant-input lg" style="display:inline-block;" id="attr-desc-input">用户绑定的所有摄像头设备</span>
+            </div>
+            <div class="ant-form-row">
+              <span class="ant-form-row-label"><span class="req">*</span> 数据类型</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;padding-left:78px;margin-bottom:14px;">
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="string"><span class="ant-radio"></span><span class="ant-radio-label" style="font-size:13px">STRING</span></label>
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="number"><span class="ant-radio"></span><span class="ant-radio-label" style="font-size:13px">NUMBER</span></label>
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="bool"><span class="ant-radio"></span><span class="ant-radio-label" style="font-size:13px">BOOL</span></label>
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="datetime"><span class="ant-radio"></span><span class="ant-radio-label" style="font-size:13px">DATETIME</span></label>
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="list"><span class="ant-radio"></span><span class="ant-radio-label" style="font-size:13px">LIST</span></label>
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="object"><span class="ant-radio"></span><span class="ant-radio-label" style="font-size:13px">OBJECT</span> <span class="ant-radio-tag">新</span></label>
+              <label class="ant-radio-row type-radio" style="margin:0;cursor:pointer" data-type="object_array"><span class="ant-radio checked"></span><span class="ant-radio-label" style="font-size:13px">OBJECT_ARRAY</span> <span class="ant-radio-tag">新</span></label>
+            </div>
+
+            <!-- OBJECT_ARRAY 子字段定义（含唯一列） -->
+            <div id="subfield-object-array">
+              <div class="ant-divider"></div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px;">子字段定义</div>
+              <table class="st">
+                <tr>
+                  <th style="width:160px">字段名 *</th>
+                  <th style="width:110px">类型 *</th>
+                  <th style="width:60px">唯一</th>
+                  <th style="width:30px"></th>
+                </tr>
+                <tr><td><input value="device_id"></td><td><select><option>STRING</option></select></td><td style="text-align:center"><span class="ant-checkbox checked"></span></td><td style="text-align:center;color:var(--text-4);cursor:pointer">✕</td></tr>
+                <tr><td><input value="mac"></td><td><select><option>STRING</option></select></td><td style="text-align:center"><span class="ant-checkbox"></span></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+                <tr><td><input value="model_id"></td><td><select><option>STRING</option></select></td><td style="text-align:center"><span class="ant-checkbox"></span></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+                <tr><td><input value="activated_year"></td><td><select><option>STRING</option></select></td><td style="text-align:center"><span class="ant-checkbox"></span></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+                <tr><td><input value="has_ai_package"></td><td><select><option>BOOL</option></select></td><td style="text-align:center"><span class="ant-checkbox"></span></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+                <tr><td><input value="bind_time"></td><td><select><option>DATETIME</option></select></td><td style="text-align:center"><span class="ant-checkbox"></span></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+              </table>
+              <span class="var-add-btn">+ 添加字段（已 6 / 50）</span>
+              <p class="muted small" style="margin-top:6px;margin-bottom:0;">「唯一」列：标记识别字段（选填），仅允许勾选 1 个。设置后写入时校验唯一性，P1 启用细粒度增删改。</p>
+            </div>
+
+            <!-- OBJECT 子字段定义（无唯一列） -->
+            <div id="subfield-object" style="display:none;">
+              <div class="ant-divider"></div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px;">子字段定义</div>
+              <table class="st">
+                <tr>
+                  <th style="width:180px">字段名 *</th>
+                  <th style="width:120px">类型 *</th>
+                  <th style="width:30px"></th>
+                </tr>
+                <tr><td><input value="city"></td><td><select><option>STRING</option></select></td><td style="text-align:center;color:var(--text-4);cursor:pointer">✕</td></tr>
+                <tr><td><input value="district"></td><td><select><option>STRING</option></select></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+                <tr><td><input value="zip_code"></td><td><select><option>STRING</option></select></td><td style="text-align:center;color:var(--text-4)">✕</td></tr>
+              </table>
+              <span class="var-add-btn">+ 添加字段（已 3 / 50）</span>
+              <p class="muted small" style="margin-top:6px;margin-bottom:0;">OBJECT 类型为单个对象，无需设置「唯一」字段。</p>
+            </div>
+
+            <!-- 其他类型不展示子字段 -->
+            <div id="subfield-none" style="display:none;">
+              <div class="ant-divider"></div>
+              <p class="muted small" style="margin:4px 0 0;">选择 OBJECT 或 OBJECT_ARRAY 时展开子字段定义区域。</p>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+              <button class="ant-btn">取 消</button>
+              <button class="ant-btn ant-btn-primary">确 定</button>
+            </div>
+          </div>
+        </div>
+
+        <script>
+        (function() {
+          var radios = document.querySelectorAll('.type-radio');
+          var panelOA = document.getElementById('subfield-object-array');
+          var panelO = document.getElementById('subfield-object');
+          var panelNone = document.getElementById('subfield-none');
+          var nameInput = document.getElementById('attr-name-input');
+          var descInput = document.getElementById('attr-desc-input');
+
+          radios.forEach(function(r) {
+            r.addEventListener('click', function() {
+              radios.forEach(function(rr) {
+                rr.querySelector('.ant-radio').classList.remove('checked');
+              });
+              r.querySelector('.ant-radio').classList.add('checked');
+              var t = r.getAttribute('data-type');
+              panelOA.style.display = t === 'object_array' ? '' : 'none';
+              panelO.style.display = t === 'object' ? '' : 'none';
+              panelNone.style.display = (t !== 'object' && t !== 'object_array') ? '' : 'none';
+              if (t === 'object_array') {
+                nameInput.textContent = 'devices';
+                descInput.textContent = '用户绑定的所有摄像头设备';
+              } else if (t === 'object') {
+                nameInput.textContent = 'home_address';
+                descInput.textContent = '用户家庭地址';
+              } else {
+                nameInput.textContent = 'attribute_name';
+                descInput.textContent = '';
+              }
+            });
+          });
+        })();
+        </script>
+
+        <div class="ui-spec-title">配额限制</div>
+        <table>
+          <thead>
+            <tr><th>限制项</th><th>值</th><th>备注</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>单项目 OBJECT / OBJECT_ARRAY 属性数</td><td>可配置（默认 50）</td><td>Braze 无显式限制；Insider 上限 20。计入总属性上限（256 个/项目）</td></tr>
+            <tr><td>单用户单对象数组最多对象数</td><td>可配置（默认 50）</td><td>按项目 VIP 等级可调整，参考 Braze 推荐 &lt;50、MoEngage 上限 100</td></tr>
+            <tr><td>单对象最多子字段数</td><td>可配置（默认 50）</td><td>Braze 无显式限制，Insider 上限 20</td></tr>
+            <tr><td>单字段 STRING 最大长度</td><td>256 字符（超出截断）</td><td>与现有 STRING 属性一致：<code>PropertyModelConverter.sub256()</code> 超 256 字符静默截断</td></tr>
+            <tr><td>单属性 JSON 序列化大小</td><td>32 KB</td><td></td></tr>
+            <tr><td>嵌套层级</td><td>1 层</td><td>子字段可以是 LIST，不可以是 OBJECT 或 OBJECT_ARRAY</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ────── §4.2 数据上报与更新 ────── -->
+    <h3 id="sec-4.2">4.2 数据上报与更新</h3>
+
+    <h4>4.2.1 与现有更新操作的关系</h4>
+    <p>MA 现有用户属性的更新操作通过 <code>PropertyValueDataRuleEnum</code> 定义，包括 6 种：</p>
+    <table>
+      <thead>
+        <tr><th>操作</th><th>code</th><th>现有支持类型</th><th>OBJECT</th><th>OBJECT_ARRAY</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>set</code>（覆盖）</td><td>1</td><td>全部类型</td><td>✅ P0 支持（局部合并）</td><td>✅ P0 支持（整体覆盖）</td></tr>
+        <tr><td><code>delete</code>（删除）</td><td>5</td><td>全部类型</td><td>✅ P0 复用</td><td>✅ P0 复用</td></tr>
+        <tr><td><code>increase</code>（累加）</td><td>2</td><td>NUMBER</td><td>待确认（子字段为 NUMBER 时）</td><td>P1（需定位到具体对象）</td></tr>
+        <tr><td><code>add</code>（LIST 追加）</td><td>3</td><td>LIST</td><td>待确认（子字段为 LIST 时）</td><td>P1</td></tr>
+        <tr><td><code>remove</code>（LIST 移除）</td><td>4</td><td>LIST</td><td>待确认</td><td>P1</td></tr>
+        <tr><td><code>setOnce</code>（仅一次）</td><td>6</td><td>LIST（内部）</td><td>不适用</td><td>不适用</td></tr>
+      </tbody>
+    </table>
+    <p class="muted small">
+      API 入口：REST API <code>POST /restapi/user/property</code>（type 字段）、SDK <code>setUserProperty</code>（type 字段）。
+      核心处理：<code>PropertyModelConverter</code> 中按 <code>dataRule</code> 分发到各 <code>handleXxxValue()</code> 方法。
+      新增 OBJECT / OBJECT_ARRAY 需新增对应的 <code>handleObjectValue()</code> / <code>handleObjectArrayValue()</code> 方法，P0 仅实现 <code>set</code> + <code>delete</code>。
+    </p>
+
+    <h4>4.2.2 P0 写入语义</h4>
+    <table>
+      <thead>
+        <tr><th>类型</th><th>P0</th><th>P1</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>OBJECT</code></td><td>局部合并（merge）：只传的子字段更新，其他不变；传 <code>null</code> 删除子字段</td><td>—</td></tr>
+        <tr><td><code>OBJECT_ARRAY</code></td><td>整体覆盖（replace）：每次写入替换整个数组</td><td>基于识别字段的 <code>add / remove / update</code></td></tr>
+      </tbody>
+    </table>
+
+    <h4>4.2.3 REST API 示例</h4>
+    <p>API 入口：<code>POST /restapi/user/property</code>，复用现有协议。通过 <code>type</code> 字段区分操作。</p>
+
+    <p class="em">① OBJECT_ARRAY：type="set" — 整体覆盖</p>
+    <p class="muted small">整个数组被传入值替换。如需保留已有对象，客户端需先拉取全量再合并后上报。</p>
+<pre><code>{
+  "euid": "user_123",
+  "type": "set",
+  "properties": {
+    "devices": [
+      {"device_id": "A001", "mac": "11:22:11", "model_id": "A31S_AK_IPC",
+       "activated_year": "2026", "has_ai_package": true, "bind_time": "2026-03-15 00:00:00"},
+      {"device_id": "B002", "mac": "22:33:22", "model_id": "VI_STREAM",
+       "activated_year": "2024", "has_ai_package": false, "bind_time": "2024-06-01 00:00:00"}
+    ]
+  }
+}</code></pre>
+
+    <p class="em">② OBJECT：type="set" — 局部合并</p>
+    <p class="muted small">只传的子字段更新，未传的子字段保持不变。</p>
+<pre><code>{
+  "euid": "user_123",
+  "type": "set",
+  "properties": {
+    "home_address": {"city": "上海", "district": "浦东"}
+  }
+}</code></pre>
+
+    <p class="em">③ 删除属性：type="delete"</p>
+<pre><code>{
+  "euid": "user_123",
+  "type": "delete",
+  "properties": {"devices": null}
+}</code></pre>
+
+    <p class="em">④ P1：基于识别字段的细粒度操作（待实现）</p>
+    <p class="muted small">参考 Braze 的 <code>$add</code> / <code>$update</code> / <code>$remove</code> 操作，P1 启用后通过识别字段定位单个对象做增删改。</p>
+<pre><code>// P1 示例 — 新增单个对象（按识别字段 device_id 判断是否存在，不存在则追加）
+{
+  "euid": "user_123",
+  "type": "add_object",
+  "properties": {
+    "devices": {"device_id": "C003", "mac": "55:66:55", "model_id": "PTZ_X1", ...}
+  }
+}
+
+// P1 示例 — 按识别字段删除单个对象
+{
+  "euid": "user_123",
+  "type": "remove_object",
+  "properties": {
+    "devices": {"device_id": "B002"}
+  }
+}</code></pre>
+    <p class="muted small">SDK 各端参照以上 REST API 的 <code>type</code> 和 <code>properties</code> 结构实现即可。</p>
+
+    <h4>4.2.4 校验错误处理</h4>
+    <p>新增的校验逻辑应<strong>复用现有错误码体系</strong>。MA 当前属性相关错误码分布在两个体系中：</p>
+    <ul>
+      <li><strong>Metadata 服务</strong>（<code>RestApiError</code>）：40008–40021 段，如 40010=无效属性、40021=数量超限</li>
+      <li><strong>CDP 服务</strong>（<code>RestApiErrorCode</code> / <code>ErrorCode</code>）：55000–55110 段，如 55102=无效属性名、55103=属性值为空</li>
+    </ul>
+    <table>
+      <thead>
+        <tr><th style="width:14%">类型</th><th>校验项</th><th>处理方式</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>复用已有</td><td>属性名不合法（55102）、属性值为空（55103）</td><td>直接复用</td></tr>
+        <tr><td>复用已有</td><td>属性数量超限（40021）</td><td>直接复用，上限含 OBJECT / OBJECT_ARRAY</td></tr>
+        <tr><td>新增</td><td>子字段类型不匹配、子字段超出预定义范围</td><td>在 55xxx 段新增，遵循 <code>ErrorCode</code> 格式</td></tr>
+        <tr><td>新增</td><td>对象数组长度超过配额上限</td><td>在 55xxx 段新增</td></tr>
+        <tr><td>新增</td><td>JSON 序列化超 32 KB</td><td>在 55xxx 段新增</td></tr>
+        <tr><td>新增</td><td>识别字段值重复（同一用户同一对象数组中两个对象的识别字段值相同，如两台设备 device_id 都是 "A001"）</td><td>在 55xxx 段新增</td></tr>
+      </tbody>
+    </table>
+    <p class="muted small">具体编号由开发在 55xxx 段中分配，避开已使用的码段。注意现有 55102/55103 在 <code>ErrorCode</code> 中存在与导出功能的复用冲突，新增码段需避开。</p>
+
+    <!-- ────── §4.3 条件筛选 · 同对象匹配 ────── -->
+    <h3 id="sec-4.3">4.3 条件筛选 · 同对象匹配</h3>
+    <p>所有涉及用户属性筛选的位置均需支持对象数组的子字段筛选：</p>
+    <ul>
+      <li><strong>旅程条件分支</strong>（用户特征筛选）</li>
+      <li><strong>旅程开始组件</strong>（用户特征筛选）</li>
+      <li><strong>事件触发组件</strong>（事件触发时，也可以筛选用户属性作为附加条件，此处同样需要支持）</li>
+    </ul>
+
+    <h4>核心语义</h4>
+    <blockquote>
+      <p>用户至少有 <strong>1 个</strong> devices 对象<strong>同时</strong>满足以下所有条件 → 命中</p>
+    </blockquote>
+    <p>避免跨对象错配：例如用户有两台设备，设备 1 是 A31S_AK_IPC 型号（2024 年激活），设备 2 是 VI_STREAM 型号（2026 年激活）。筛选"型号为 A31S_AK_IPC 且 2026 年激活"时，不应该命中该用户（没有任何一台设备同时满足两个条件）。</p>
+
+    <h4>筛选交互：复用现有级联选择器</h4>
+    <p>选择对象数组属性时，使用现有的<strong>多级级联选择器</strong>，在选择对象数组属性后，下一级继续选择其子字段。最终对子字段使用已有的运算符（STRING / NUMBER / BOOL / DATETIME / LIST 各自已有的全部运算符）。</p>
+
+    <div class="ui-spec">
+      <div class="ui-spec-header">
+        UI 设计稿 · 级联选择器扩展 · 对象数组子字段
+        <span class="badge-tag">B-1</span>
+      </div>
+      <div class="ui-spec-body">
+        <div class="ui-spec-desc">复用现有属性级联选择器（参考截图中的三级选择器结构），在第二级选中对象数组属性后，第三级展示其预定义的子字段。</div>
+
+        <div class="mock">
+          <div class="mock-label">级联选择器 · 选择对象数组的子字段</div>
+          <div class="mock-canvas">
+            <div class="cascader-pop">
+              <div class="cascader-col">
+                <div class="cascader-item">自定义事件属性 <span class="desc">0</span><span class="cascader-item-arrow">›</span></div>
+                <div class="cascader-item">推荐事件属性 <span class="desc">0</span><span class="cascader-item-arrow">›</span></div>
+                <div class="cascader-item">标准事件属性 <span class="desc">32</span><span class="cascader-item-arrow">›</span></div>
+                <div class="cascader-item active">用户属性 <span class="desc">62</span><span class="cascader-item-arrow">›</span></div>
+                <div class="cascader-item">设备属性 <span class="desc">44</span><span class="cascader-item-arrow">›</span></div>
+              </div>
+              <div class="cascader-col">
+                <div class="cascader-item">first_name<span class="desc">STRING</span></div>
+                <div class="cascader-item">email<span class="desc">STRING</span></div>
+                <div class="cascader-item active" style="font-weight:600;">devices<span class="desc" style="color:var(--accent)">对象数组</span><span class="cascader-item-arrow">›</span></div>
+                <div class="cascader-item">tags<span class="desc">LIST</span></div>
+                <div class="cascader-item">vip_level<span class="desc">NUMBER</span></div>
+              </div>
+              <div class="cascader-col" style="background:#fafbff;">
+                <div class="cascader-item" style="font-size:11px;color:var(--text-3);pointer-events:none;font-weight:600;">devices 子字段</div>
+                <div class="cascader-item">device_id<span class="desc">STRING</span></div>
+                <div class="cascader-item active">mac<span class="desc">STRING</span></div>
+                <div class="cascader-item">model_id<span class="desc">STRING</span></div>
+                <div class="cascader-item">activated_year<span class="desc">STRING</span></div>
+                <div class="cascader-item">has_ai_package<span class="desc">BOOL</span></div>
+                <div class="cascader-item">bind_time<span class="desc">DATETIME</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ui-spec-title">选完子字段后 · 条件配置（OBJECT_ARRAY）</div>
+        <div class="mock">
+          <div class="mock-label">条件分支 · 同对象匹配</div>
+          <div class="mock-canvas">
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;">设置筛选条件</div>
+
+            <div class="ant-form-row">
+              <span class="ant-select">devices. activated_year</span>
+              <span class="ant-select">等于</span>
+              <span class="ant-input" style="width:140px;">2024</span>
+              <span style="color:var(--danger);cursor:pointer;font-size:16px;">⊖</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+              <span style="padding:2px 10px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:4px;font-size:12px;color:var(--accent-strong);font-weight:600;cursor:pointer;">AND</span>
+              <span style="padding:2px 10px;background:#f0f2f5;border:1px solid #d9dfe8;border-radius:4px;font-size:12px;color:var(--text-3);cursor:pointer;">OR</span>
+            </div>
+            <div class="ant-form-row">
+              <span class="ant-select">devices. has_ai_package</span>
+              <span class="ant-select">为真</span>
+              <span style="color:var(--danger);cursor:pointer;font-size:16px;">⊖</span>
+            </div>
+
+            <span class="var-add-btn">+ 添加条件</span>
+          </div>
+        </div>
+
+        <div class="ui-spec-title">AND / OR 与同对象匹配的关系</div>
+        <table>
+          <thead>
+            <tr><th width="12%">逻辑</th><th>同一对象数组的子字段条件之间</th><th>不同属性之间</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="em">AND</td><td>所有条件必须命中<strong>同一个对象</strong>（同对象匹配生效）</td><td>所有属性条件都需满足</td></tr>
+            <tr><td class="em">OR</td><td>各条件<strong>可以命中不同对象</strong>（无同对象约束），只要用户的数组中存在匹配的对象即可</td><td>满足任一属性条件即可</td></tr>
+          </tbody>
+        </table>
+        <p class="muted small">条件列表中可以混合配置对象数组子字段和其他非 Object 属性，共同构成筛选条件。AND/OR 关系复用现有的多条件逻辑。</p>
+
+        <div class="ui-spec-title">OBJECT 属性的筛选</div>
+        <p>OBJECT 属性只有一个对象，无需同对象匹配。筛选时同样通过级联选择器选到子字段，使用已有运算符：</p>
+        <div class="mock">
+          <div class="mock-label">条件分支 · OBJECT 子字段筛选</div>
+          <div class="mock-canvas">
+            <div class="ant-form-row">
+              <span class="ant-select">home_address. city</span>
+              <span class="ant-select">等于</span>
+              <span class="ant-input" style="width:140px;">上海</span>
+              <span style="color:var(--danger);cursor:pointer;font-size:16px;">⊖</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ui-spec-title">运算符</div>
+        <p>子字段的运算符<strong>直接复用该类型已有的全部运算符</strong>，无需单独定义。STRING / NUMBER / BOOL / DATETIME / LIST 各自已有的全部运算符均可用。</p>
+
+        <div class="ui-spec-title">对象数组属性本身的判断</div>
+        <p>级联选择器选中对象数组属性本身（不继续选子字段）时，支持对属性本身做判断：</p>
+        <div class="mock">
+          <div class="mock-label">对象数组属性本身 · 为空 / 不为空</div>
+          <div class="mock-canvas">
+            <div class="ant-form-row">
+              <span class="ant-select" style="min-width:160px;">devices（对象数组）</span>
+              <span class="ant-select" style="min-width:100px;">不为空</span>
+            </div>
+            <div class="ant-divider"></div>
+            <p class="muted small" style="margin:0;">支持的运算符：<strong>为空</strong>（用户没有任何对象）、<strong>不为空</strong>（用户至少有 1 个对象）</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4>事件属性是否也需支持对象类型？</h4>
+    <div class="ant-alert ant-alert-warning">
+      <span class="ant-alert-icon">⚠</span>
+      <span class="ant-alert-body">
+        <strong>待确认项</strong>：当前需求仅讨论用户属性扩展。事件属性是否也需要支持 OBJECT / OBJECT_ARRAY，需单独评估。<br>
+        <strong>竞品参考</strong>：CleverTap 支持事件属性的 Nested Objects（最多 3 层嵌套）；MoEngage 同时支持用户属性和事件属性的 Object 类型（默认配额 10 个用户 Object + 5 个事件 Object）。本期暂不涉及事件属性，留作 P1+ 评估。
+      </span>
+    </div>
+
+    <!-- ────── §4.4 变量操作链 ────── -->
+    <h3 id="sec-4.4">4.4 变量操作链</h3>
+    <p>
+      完全复用现有「编辑属性 → 链式操作 → 预览」模式。以下场景展示如何使用已有 Liquid 操作配置对象数组属性的取值。
+    </p>
+
+    <h4>4.4.1 属性选择说明</h4>
+    <p><strong>OBJECT_ARRAY（对象数组）</strong>：选择对象数组属性本身（如 <code>devices</code>），操作链起点是整个数组。<code>where</code> 决定"筛选哪些对象"，<code>map</code> 决定"取哪个子字段的值"。</p>
+    <p><strong>OBJECT（单对象）</strong>：直接选到子字段（如 <code>home_address → city</code>），无需 <code>where / map</code>，结果就是该子字段的值。</p>
+
+    <h4>4.4.2 可用操作一览</h4>
+    <p>以下操作均为 Liquid 标准能力，已在系统中支持。对象数组场景下配合使用即可：</p>
+    <table>
+      <thead>
+        <tr><th>操作名</th><th>参数</th><th>Liquid 语法</th><th>用途</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="em"><code>where</code></td><td>字段名, 值</td><td><code>| where: 'model_id', 'A31S_AK_IPC'</code></td><td>按子字段等值过滤（仅支持等值）</td></tr>
+        <tr><td class="em"><code>map</code></td><td>子字段名</td><td><code>| map: 'mac'</code></td><td>提取某个子字段，得到值数组</td></tr>
+        <tr><td class="em"><code>sort</code></td><td>子字段名</td><td><code>| sort: 'bind_time'</code></td><td>按某子字段升序排列</td></tr>
+        <tr><td class="em"><code>reverse</code></td><td>无</td><td><code>| reverse</code></td><td>反转数组（配合 sort 实现降序）</td></tr>
+        <tr><td class="em"><code>first</code></td><td>无</td><td><code>| first</code></td><td>取第 1 个元素</td></tr>
+        <tr><td class="em"><code>last</code></td><td>无</td><td><code>| last</code></td><td>取最后 1 个元素</td></tr>
+        <tr><td class="em"><code>join</code></td><td>分隔符</td><td><code>| join: ','</code></td><td>将数组拼接为字符串</td></tr>
+        <tr><td class="em"><code>slice</code></td><td>起始位, 长度</td><td><code>| slice: 0, 3</code></td><td>取子集</td></tr>
+        <tr><td class="em"><code>json</code></td><td>无</td><td><code>| json</code></td><td>输出为 JSON 格式</td></tr>
+        <tr><td class="em"><code>default</code></td><td>默认值</td><td><code>| default: ''</code></td><td>空值兜底</td></tr>
+      </tbody>
+    </table>
+
+    <h4>4.4.3 场景 A：取多个满足条件的 mac（JSON 数组下发）</h4>
+
+    <div class="ui-spec">
+      <div class="ui-spec-header">
+        UI 设计稿 · 编辑变量 · 取多个 mac → JSON 数组
+        <span class="badge-tag">C-1</span>
+      </div>
+      <div class="ui-spec-body">
+        <div class="ui-spec-desc">交互：完全复用现有编辑变量弹窗。运营依次添加操作：两个 <code>where</code>（多条件过滤）→ <code>map</code> → <code>json</code>。</div>
+
+        <div class="mock">
+          <div class="mock-label">编辑变量弹窗</div>
+          <div class="mock-canvas" style="background:rgba(0,0,0,0.04);padding:24px;">
+            <div class="var-modal">
+              <div class="var-modal-header">
+                <span class="var-modal-title">编辑变量</span>
+                <span class="var-modal-close">✕</span>
+              </div>
+              <div class="var-modal-body">
+                <div class="var-field">
+                  <div class="var-field-label">编辑属性</div>
+                  <div class="var-cascader var-cascader-active">
+                    <span>用户属性 / devices（用户摄像头列表）</span>
+                  </div>
+                </div>
+                <div class="var-field">
+                  <div class="var-field-label">
+                    <span>如果属性为空</span>
+                    <span class="var-field-label-badge">选填</span>
+                  </div>
+                  <input class="ant-input lg" placeholder="请输入" style="width:100%;" />
+                </div>
+                <div class="var-field">
+                  <div class="var-field-label var-field-label-row">
+                    <div><span>操作</span><span class="var-field-label-badge">选填</span></div>
+                    <span class="var-add-btn">+ 添加</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">where</span>
+                    <input class="ant-input" value="activated_year" placeholder="字段名">
+                    <input class="ant-input" value="2024" placeholder="字段值">
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">where</span>
+                    <input class="ant-input" value="has_ai_package" placeholder="字段名">
+                    <input class="ant-input" value="true" placeholder="字段值">
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">map</span>
+                    <input class="ant-input" value="mac" placeholder="子字段名">
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">json</span>
+                    <span class="rm">⊖</span>
+                  </div>
+                </div>
+                <div class="var-field">
+                  <div class="var-field-label">预览</div>
+                  <div class="var-preview">
+                    <span class="var-preview-text">&#123;&#123; devices | where: 'activated_year', '2024' | where: 'has_ai_package', true | map: 'mac' | json &#125;&#125;</span>
+                    <span style="color:var(--text-4);cursor:pointer;font-size:14px;flex-shrink:0;">⎘</span>
+                  </div>
+                </div>
+                <div class="ant-alert ant-alert-info" style="margin-bottom:0;">
+                  <span class="ant-alert-icon">ⓘ</span>
+                  <span class="ant-alert-body">渲染结果示例：<code>["33:44:33","44:55:44"]</code>（厨房 + 书房的 mac，满足 activated_year=2024 且 has_ai_package=true）</span>
+                </div>
+              </div>
+              <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+                <button class="ant-btn">取消</button>
+                <button class="ant-btn ant-btn-primary">确定</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4>4.4.4 场景 B：取单台设备的 mac（Push deeplink）</h4>
+
+    <div class="ui-spec">
+      <div class="ui-spec-header">
+        UI 设计稿 · 编辑变量 · 取单个 mac
+        <span class="badge-tag">C-2</span>
+      </div>
+      <div class="ui-spec-body">
+        <div class="ui-spec-desc">操作链：<code>where → sort → reverse → map → first</code>。先过滤型号，按绑定时间降序排列，提取 mac 字段，取第一个值。注意 <code>map</code> 放在 <code>first</code> 之前，这是标准 Liquid 用法，无需自定义 filter。</div>
+
+        <div class="mock">
+          <div class="mock-label">编辑变量弹窗</div>
+          <div class="mock-canvas" style="background:rgba(0,0,0,0.04);padding:24px;">
+            <div class="var-modal">
+              <div class="var-modal-header">
+                <span class="var-modal-title">编辑变量</span>
+                <span class="var-modal-close">✕</span>
+              </div>
+              <div class="var-modal-body">
+                <div class="var-field">
+                  <div class="var-field-label">编辑属性</div>
+                  <div class="var-cascader var-cascader-active">
+                    <span>用户属性 / devices（用户摄像头列表）</span>
+                  </div>
+                </div>
+                <div class="var-field">
+                  <div class="var-field-label"><span>如果属性为空</span><span class="var-field-label-badge">选填</span></div>
+                  <input class="ant-input lg" placeholder="请输入" style="width:100%;" />
+                </div>
+                <div class="var-field">
+                  <div class="var-field-label var-field-label-row">
+                    <div><span>操作</span><span class="var-field-label-badge">选填</span></div>
+                    <span class="var-add-btn">+ 添加</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">where</span>
+                    <input class="ant-input" value="model_id" placeholder="字段名">
+                    <input class="ant-input" value="A31S_AK_IPC" placeholder="字段值">
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">sort</span>
+                    <input class="ant-input" value="bind_time" placeholder="子字段名">
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">reverse</span>
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">map</span>
+                    <input class="ant-input" value="mac" placeholder="子字段名">
+                    <span class="rm">⊖</span>
+                  </div>
+                  <div class="op-row">
+                    <span class="ant-select">first</span>
+                    <span class="rm">⊖</span>
+                  </div>
+                </div>
+                <div class="var-field">
+                  <div class="var-field-label">预览</div>
+                  <div class="var-preview">
+                    <span class="var-preview-text">&#123;&#123; devices | where: 'model_id', 'A31S_AK_IPC' | sort: 'bind_time' | reverse | map: 'mac' | first &#125;&#125;</span>
+                    <span style="color:var(--text-4);cursor:pointer;font-size:14px;flex-shrink:0;">⎘</span>
+                  </div>
+                </div>
+                <div class="ant-alert ant-alert-info" style="margin-bottom:0;">
+                  <span class="ant-alert-icon">ⓘ</span>
+                  <span class="ant-alert-body">渲染结果示例：<code>11:22:11</code>（最近绑定的 A31S_AK_IPC 设备的 mac）</span>
+                </div>
+              </div>
+              <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+                <button class="ant-btn">取消</button>
+                <button class="ant-btn ant-btn-primary">确定</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────── §4.5 附加字段可视化插入变量 ────── -->
+    <h3 id="sec-4.5">4.5 附加字段可视化插入变量</h3>
+    <p>Push 附加字段当前已支持 key-value 配置，value 输入框支持手动编写 Liquid 变量，但<strong>缺少可视化的「选择变量」入口</strong>。本期在 value 输入框旁增加 <code>{/}</code> 按钮，点击后调起编辑变量弹窗，配置完成后以标签形式回填。标签仅显示属性名称，点击可打开编辑。</p>
+
+    <div class="ui-spec">
+      <div class="ui-spec-header">
+        UI 设计稿 · Push 附加字段 · 增加可视化变量选择
+        <span class="badge-tag">D-1</span>
+      </div>
+      <div class="ui-spec-body">
+        <div class="ui-spec-desc">实现位置：Push 组件配置 → 高级配置 → 附加字段。value 输入框右侧或内部新增「选择变量」入口按钮，点击后调起编辑变量弹窗。</div>
+
+        <div class="mock">
+          <div class="mock-label">附加字段 · 已插入变量</div>
+          <div class="mock-canvas">
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;">附加字段 <span style="color:var(--text-4);font-size:11px;font-weight:normal;cursor:help;">ⓘ</span></div>
+
+            <div class="push-row">
+              <span class="ant-input" style="width:130px;">nativePage</span>
+              <span style="color:var(--text-3);">：</span>
+              <span class="ant-select" style="min-width:80px;">字符串</span>
+              <span class="ant-input" style="flex:1;">album_page</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #d9dfe8;border-radius:6px;background:#fff;cursor:pointer;color:var(--accent);font-size:14px;font-weight:600;flex-shrink:0;" title="选择变量">{/}</span>
+            </div>
+            <div class="push-row">
+              <span class="ant-input" style="width:130px;">target_macs</span>
+              <span style="color:var(--text-3);">：</span>
+              <span class="ant-select" style="min-width:80px;">字符串</span>
+              <span style="flex:1;display:flex;align-items:center;gap:4px;border:1px solid #d9dfe8;border-radius:6px;padding:4px 8px;background:#fff;min-height:32px;">
+                <span style="display:inline-flex;align-items:center;padding:2px 10px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:4px;font-size:12px;color:var(--accent-strong);cursor:pointer;white-space:nowrap;" title="点击编辑变量">devices</span>
+              </span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #d9dfe8;border-radius:6px;background:#fff;cursor:pointer;color:var(--accent);font-size:14px;font-weight:600;flex-shrink:0;" title="选择变量">{/}</span>
+              <span style="color:var(--danger);cursor:pointer;font-size:14px;">✕</span>
+            </div>
+
+            <span class="var-add-btn" style="margin-top:4px;">+ 添加</span>
+
+            <div class="ant-divider"></div>
+            <div class="ant-alert ant-alert-info" style="margin-bottom:0;">
+              <span class="ant-alert-icon">ⓘ</span>
+              <span class="ant-alert-body">
+                <strong>交互说明</strong>：每行 value 右侧增加 <code>{/}</code> 按钮。点击后调起编辑变量弹窗，配置完成后在 value 输入框内以标签块展示（仅显示属性名称，点击可编辑详情）。运营也可以直接手写 Liquid，两种方式并存。
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ui-spec-title">下发 payload 示例</div>
+<pre><code>// 渲染前（MA 存储的附加字段配置）
+{
+  "nativePage": "album_page",
+  "target_macs": "{{ devices | where: 'activated_year', '2024' | where: 'has_ai_package', true | map: 'mac' | json }}"
+}
+
+// 渲染后（实际下发到客户端的 payload）
+{
+  "nativePage": "album_page",
+  "target_macs": ["33:44:33", "44:55:44"]
+}
+
+// 客户端处理：
+// JSON.parse(target_macs) → ["33:44:33","44:55:44"]
+// 用户切到厨房(33:44:33) → 命中 → 展示 C 内容
+// 用户切到卧室(11:22:11) → 不在列表 → 走其他分支</code></pre>
+      </div>
+    </div>
+
+    <!-- ────── §4.6 用户详情页展示 ────── -->
+    <h3 id="sec-4.6">4.6 用户详情页展示</h3>
+    <p>用户详情页当前以 key-value 列表展示用户属性。新增 OBJECT / OBJECT_ARRAY 类型后，需扩展展示交互：</p>
+
+    <div class="ui-spec">
+      <div class="ui-spec-header">
+        UI 设计稿 · 用户详情页 · 对象数组属性展示
+        <span class="badge-tag">E-1</span>
+      </div>
+      <div class="ui-spec-body">
+        <div class="ui-spec-desc">实现位置：用户详情 → 用户属性 Tab。在属性列表中，OBJECT / OBJECT_ARRAY 类型的属性点击「展开」后显示表格形式的数据。</div>
+
+        <div class="mock">
+          <div class="mock-label">用户详情页 · 属性列表（含对象数组）</div>
+          <div class="mock-canvas">
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;">用户属性</div>
+
+            <table style="font-size:13px;">
+              <thead>
+                <tr><th style="width:28%">属性名</th><th style="width:14%">类型</th><th>值</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>first_name</td><td><span class="pill">STRING</span></td><td>张三</td></tr>
+                <tr><td>vip_level</td><td><span class="pill">NUMBER</span></td><td>3</td></tr>
+                <tr><td>email</td><td><span class="pill">STRING</span></td><td>zhangsan@example.com</td></tr>
+                <tr>
+                  <td>home_address</td>
+                  <td><span class="pill pill-accent">OBJECT</span></td>
+                  <td><span style="color:var(--accent);cursor:pointer;font-size:12px;font-weight:500;">▶ 展开查看</span></td>
+                </tr>
+                <tr>
+                  <td>devices</td>
+                  <td><span class="pill pill-purple">对象数组</span></td>
+                  <td><span style="color:var(--purple);font-size:12px;">4 个对象</span> <span style="color:var(--accent);cursor:pointer;font-size:12px;font-weight:500;margin-left:8px;">▶ 展开查看</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mock">
+          <div class="mock-label">OBJECT 属性展开后</div>
+          <div class="mock-canvas">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <span style="font-size:13px;font-weight:600;">home_address</span>
+              <span class="pill pill-accent" style="font-size:11px;">OBJECT</span>
+              <span style="color:var(--accent);cursor:pointer;font-size:12px;">▼ 收起</span>
+            </div>
+            <table style="font-size:13px;margin:0;">
+              <thead><tr><th style="width:30%">子字段</th><th style="width:15%">类型</th><th>值</th></tr></thead>
+              <tbody>
+                <tr><td>city</td><td>STRING</td><td>上海</td></tr>
+                <tr><td>district</td><td>STRING</td><td>浦东</td></tr>
+                <tr><td>zip_code</td><td>STRING</td><td>200120</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mock">
+          <div class="mock-label">OBJECT_ARRAY 属性展开后 · 表格形式</div>
+          <div class="mock-canvas">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <span style="font-size:13px;font-weight:600;">devices</span>
+              <span class="pill pill-purple" style="font-size:11px;">对象数组</span>
+              <span style="font-size:12px;color:var(--text-3);">共 4 个对象</span>
+              <span style="color:var(--accent);cursor:pointer;font-size:12px;">▼ 收起</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="font-size:12px;margin:0;white-space:nowrap;">
+                <thead>
+                  <tr>
+                    <th style="width:30px">#</th>
+                    <th>device_id <span style="font-size:10px;color:var(--accent);">🔑</span></th>
+                    <th>mac</th>
+                    <th>model_id</th>
+                    <th>activated_year</th>
+                    <th>has_ai_package</th>
+                    <th>bind_time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>1</td><td>A001</td><td>11:22:11</td><td>A31S_AK_IPC</td><td>2026</td><td>true</td><td>2026-03-15</td></tr>
+                  <tr><td>2</td><td>B002</td><td>22:33:22</td><td>VI_STREAM</td><td>2024</td><td>false</td><td>2024-06-01</td></tr>
+                  <tr><td>3</td><td>C003</td><td>33:44:33</td><td>A31S_AK_IPC</td><td>2024</td><td>true</td><td>2024-09-20</td></tr>
+                  <tr><td>4</td><td>D004</td><td>44:55:44</td><td>PTZ_X1</td><td>2024</td><td>true</td><td>2024-12-01</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="muted small" style="margin:8px 0 0;">🔑 标记表示该字段为识别字段（唯一）。表头列名取自子字段预定义。</p>
+          </div>
+        </div>
+
+        <div class="ui-spec-title">交互说明</div>
+        <ul>
+          <li><strong>收起 / 展开</strong>：默认收起，显示类型标签和对象数量。点击「展开查看」后展示完整数据表格。</li>
+          <li><strong>OBJECT</strong>：展开后显示子字段-值的两列表格。</li>
+          <li><strong>OBJECT_ARRAY</strong>：展开后以横向表格展示，每行一个对象，列为子字段。识别字段列标记 🔑 图标。</li>
+          <li><strong>空值</strong>：属性为空时显示 <code>—</code>；对象数组为空数组时显示"0 个对象"。</li>
+          <li><strong>溢出处理</strong>：子字段较多时表格水平滚动。单个字段值过长时截断并 hover 显示完整内容。</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ §5 Liquid 操作链参考 ═══════════════ -->
+  <div class="section" id="sec-5">
+    <h2>5. Liquid 操作链 · 常用配置参考</h2>
+    <p>供运营和 CSM 参考。每种目标对应的操作链、Liquid 预览和输出结果示例。所有操作均为标准 Liquid filter，无需自定义实现（<code>json</code> 需确认引擎是否内置）。</p>
+    <table>
+      <thead>
+        <tr><th width="22%">目标</th><th width="46%">完整 Liquid 语法</th><th>输出示例</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>取单个设备 mac（最近绑定）</td>
+          <td><code>{{ devices | where: 'model_id', 'A31S_AK_IPC' | sort: 'bind_time' | reverse | map: 'mac' | first }}</code></td>
+          <td><code>11:22:11</code></td>
+        </tr>
+        <tr>
+          <td>取多个设备 mac（多条件过滤，JSON 数组）</td>
+          <td><code>{{ devices | where: 'activated_year', '2024' | where: 'has_ai_package', true | map: 'mac' | json }}</code></td>
+          <td><code>["33:44:33","44:55:44"]</code></td>
+        </tr>
+        <tr>
+          <td>取多个设备 mac（逗号拼接）</td>
+          <td><code>{{ devices | where: 'activated_year', '2024' | map: 'mac' | join: ',' }}</code></td>
+          <td><code>33:44:33,44:55:44</code></td>
+        </tr>
+        <tr>
+          <td>取所有设备型号（去重）</td>
+          <td><code>{{ devices | map: 'model_id' | uniq | join: '、' }}</code></td>
+          <td><code>A31S_AK_IPC、VI_STREAM</code></td>
+        </tr>
+        <tr>
+          <td>设备总数</td>
+          <td><code>{{ devices | size }}</code></td>
+          <td><code>4</code></td>
+        </tr>
+        <tr>
+          <td>取第 1 个设备型号</td>
+          <td><code>{{ devices | map: 'model_id' | first }}</code></td>
+          <td><code>A31S_AK_IPC</code></td>
+        </tr>
+        <tr>
+          <td>取第 N 个设备 mac（如第 2 个）</td>
+          <td><code>{{ devices | sort: 'device_id' | slice: 1, 1 | map: 'mac' | first }}</code></td>
+          <td><code>22:33:22</code></td>
+        </tr>
+        <tr>
+          <td>空值兜底</td>
+          <td><code>{{ devices | map: 'mac' | first | default: 'unknown' }}</code></td>
+          <td><code>unknown</code>（如果为空）</td>
+        </tr>
+        <tr>
+          <td>OBJECT 取子字段</td>
+          <td><code>{{ home_address.city }}</code></td>
+          <td><code>上海</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ §6 竞品参考 ═══════════════ -->
+  <div class="section" id="sec-6">
+    <h2>6. 竞品参考<span class="h2-sub">（设计依据）</span></h2>
+    <p>本方案参考了 Braze、MoEngage、Iterable、Insider、CleverTap 等竞品在多对象属性上的设计。详见 <code>01_竞品调研_多对象属性能力扫描.md</code>。</p>
+
+    <table>
+      <thead>
+        <tr><th>维度</th><th>本方案</th><th>Braze</th><th>MoEngage</th><th>Iterable</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>数据模型</td><td>对象数组（属性内嵌）</td><td>对象数组（Custom Attribute）</td><td>对象数组（User Attribute）</td><td>Catalog + User Field</td></tr>
+        <tr><td>嵌套层级</td><td>1 层</td><td>1 层（子字段可存数组但不可筛选）</td><td>2 层（子字段数组可筛选）</td><td>1 层</td></tr>
+        <tr><td>同对象匹配</td><td>✅ 支持</td><td>✅ Multi-Criteria Segmentation</td><td>✅ With 操作符</td><td>✅ nested 类型</td></tr>
+        <tr><td>细粒度更新</td><td>P1（识别字段）</td><td>✅ add / remove by ID</td><td>✅ upsert by key</td><td>✅ Catalog API</td></tr>
+        <tr><td>变量取值</td><td>Liquid 操作链</td><td>Liquid（标准 filter + Connected Content 可调外部 API 获取数据）</td><td>Liquid 内置</td><td>Handlebars</td></tr>
+        <tr><td>识别字段</td><td>可选</td><td>可选</td><td>必填（key 字段）</td><td>主键必填</td></tr>
+        <tr><td>数组上限</td><td>可配置（默认 50）</td><td>无限制（推荐 &lt;50）</td><td>100</td><td>无限制</td></tr>
+        <tr><td>事件属性 Object</td><td>P1+ 评估</td><td>不支持</td><td>✅ 支持（配额 5 个）</td><td>不支持</td></tr>
+        <tr><td>where 非等值过滤</td><td>筛选（全运算符）；Liquid（仅等值）</td><td>分群支持全运算符；Liquid <code>where</code> 仅等值</td><td>分群支持 contains / gt / lt 等</td><td>nested 支持全运算符</td></tr>
+      </tbody>
+    </table>
+
+    <h4>关键借鉴点</h4>
+    <ul>
+      <li>Braze、MoEngage 均支持对象数组内嵌于用户属性，是业界主流做法。</li>
+      <li>同对象匹配是所有竞品的标配能力，解决跨对象错配是核心价值。</li>
+      <li>识别字段在竞品中通常可选但推荐，本方案采取同策略。</li>
+      <li><strong>Braze 的 Connected Content</strong> 是一种在消息模板中实时调用外部 API 获取数据的能力，与对象数组属性本身无关，是另一种数据获取通道。本方案不涉及。</li>
+      <li><strong>where 的等值限制</strong>：Liquid 语言的 <code>where</code> filter 仅支持等值过滤，这是语言本身的限制。旅程筛选（§4.3）走服务端查询引擎，不受此限制，支持全部运算符。二者逻辑不同、互不影响。</li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════ §7 技术实现要点 ═══════════════ -->
+  <div class="section" id="sec-7">
+    <h2>7. 技术实现要点<span class="h2-sub">（仅供参考，以开发技术方案为准）</span></h2>
+
+    <h3>7.1 数据模型扩展</h3>
+<pre><code>// UserAttributeDataType.java（现有：STRING=1, NUMBER=2, BOOL=3, DATA_TIME=4, LIST=5）
+OBJECT(6),        // 单个 JSON 对象
+OBJECT_ARRAY(7)   // JSON 对象数组
+
+// PropertyValueDataTypeEnum.java（现有：string=1, number=2, bool=3, datetime=4, list=5）
+object(6),
+object_array(7)
+
+// ProjectUserAttribute 新增字段
+sub_field_definitions: JSON  -- 子字段预定义 [{name, type, is_identifier}]
+max_array_size: INT          -- 对象数组上限（默认 50，可按项目配置）</code></pre>
+
+    <h3>7.2 存储</h3>
+    <ul>
+      <li>用户属性值序列化为 JSON 存储（与 LIST 类型类似）。</li>
+      <li>子字段索引：对预定义的子字段建立索引，支持同对象匹配查询。</li>
+      <li>查询引擎需支持 <code>EXISTS obj IN array WHERE obj.field1 = x AND obj.field2 = y</code> 语义。</li>
+    </ul>
+
+    <h3>7.3 代码改动范围</h3>
+    <table>
+      <thead>
+        <tr><th>服务 / 模块</th><th>改动内容</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>oversea-ma-metadata</code></td><td>UserAttributeDataType 枚举 +2；ProjectUserAttribute 增加子字段预定义字段；属性管理 API 扩展</td></tr>
+        <tr><td><code>oversea-ma-cdp</code></td><td><code>PropertyModelConverter</code> 新增 handleObjectValue / handleObjectArrayValue；<code>DataCommonUtils.matchValueDataType()</code> 扩展 Map / List&lt;Map&gt; 推断；JSON 存储；子字段索引</td></tr>
+        <tr><td><code>oversea-ma-workflow</code></td><td>旅程筛选器支持对象数组子字段路径 + 同对象匹配语义</td></tr>
+        <tr><td>SDK（iOS / Android / Web）</td><td>setUserProperty 支持传入 JSON Object / Array</td></tr>
+        <tr><td>前端</td><td>创建属性页面子字段预定义 UI；级联选择器第三级子字段；编辑变量操作链新增操作项；附加字段变量选择入口</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ §8 P0/P1 ═══════════════ -->
+  <div class="section" id="sec-8">
+    <h2>8. P0 / P1 范围</h2>
+
+    <h3>P0（首期）</h3>
+    <ol>
+      <li>属性类型扩展（OBJECT / OBJECT_ARRAY + 子字段预定义 + 识别字段可选）</li>
+      <li>SDK / REST API 支持 JSON 写入（Object 合并、对象数组整体覆盖、子字段校验、自动创建）</li>
+      <li>条件筛选（对象数组子字段 + 同对象匹配 + 级联选择器第三级）</li>
+      <li>变量操作链配置（对象数组场景下使用 <code>where / map / sort / first / json</code> 等已有操作组合取值）</li>
+      <li>Push 附加字段可视化变量选择</li>
+      <li>用户详情页对象数组属性的表格展示</li>
+    </ol>
+
+    <h3>P1（次期）</h3>
+    <ol>
+      <li>基于识别字段的细粒度增删改（<code>add / remove / update by identifier</code>）</li>
+      <li>CSV 批量导入对象数组数据</li>
+      <li>数组长度筛选（<code>devices.length > N</code>）</li>
+      <li>事件属性 Object 类型支持评估</li>
+    </ol>
+  </div>
+
+  <!-- ═══════════════ 附录 · 待确认 ═══════════════ -->
+  <div class="section" id="sec-9">
+    <h2>附录 · 待确认事项</h2>
+    <table>
+      <thead>
+        <tr><th width="5%">#</th><th width="36%">事项</th><th>当前结论 / 建议</th><th width="14%">影响范围</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>现有属性更新操作对子字段的复用</td><td><strong>待确认</strong>：P0 仅支持 <code>set</code> + <code>delete</code>。OBJECT 子字段为 NUMBER 时是否 P0 就支持 <code>increase</code>？子字段为 LIST 时是否支持 <code>add</code> / <code>remove</code>？需评估 <code>PropertyModelConverter</code> 的改造成本。</td><td>API 设计</td></tr>
+        <tr><td>2</td><td>自动创建的子字段推断准确性</td><td><strong>待确认</strong>：需扩展 <code>DataCommonUtils.matchValueDataType()</code> 支持 Map / List&lt;Map&gt; 推断。边界情况：值为 <code>null</code> 时推断为 STRING（与现有一致）；混合类型数组（有些元素是 Map 有些不是）需明确处理策略。</td><td>自动创建</td></tr>
+        <tr><td>3</td><td>空值处理：属性为空 vs 操作链结果为空</td><td><strong>待确认</strong>：现有"如果属性为空"配置是判断属性本身为空。当属性不为空但经 <code>where</code> 过滤后结果为空时，是否也应触发默认值？<br>
+          竞品参考：Braze 通过 Liquid 的 <code>{% if result == blank %}</code> 处理。建议本期要求开发兼容——当操作链最终结果为空值时，等同于"属性为空"，触发默认值。</td><td>变量渲染</td></tr>
+        <tr><td>4</td><td>错误码具体编号</td><td><strong>待确认</strong>：需参照 MA 现有错误码表（Metadata 40xxx / CDP 55xxx）分配新编号。</td><td>API</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align:center;color:var(--text-4);font-size:12px;margin-top:24px;">
+    EngageLab MA · 用户属性 Object / Object Array 扩展 · 需求方案 V1 · 2026-06-08
+  </div>
+
+  </main>
+  </div>
+</div>
+
+<!-- ═══════════════ 目录联动脚本 ═══════════════ -->
+<script>
+(function () {
+  var nav = document.getElementById('toc-nav');
+  if (!nav) return;
+  var links = Array.from(nav.querySelectorAll('a'));
+  var linkMap = new Map();
+  links.forEach(function (a) {
+    var id = a.getAttribute('href').slice(1);
+    var target = document.getElementById(id);
+    if (target) linkMap.set(target, a);
+  });
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      var link = linkMap.get(entry.target);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '0px 0px -75% 0px', threshold: 0 });
+  linkMap.forEach(function (_, target) { observer.observe(target); });
+  links.forEach(function (a) {
+    a.addEventListener('click', function () {
+      links.forEach(function (l) { l.classList.remove('active'); });
+      a.classList.add('active');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
