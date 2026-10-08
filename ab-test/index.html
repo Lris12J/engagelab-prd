@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="了解 EngageLab MA 旅程 A/B 测试的适用场景、配置方式和统计口径。">
+  <title>旅程 A/B 测试 | EngageLab MA 功能介绍</title>
+  <style>
+    :root { color-scheme: light; --ink: #202938; --muted: #687385; --line: #e4e9f0; --blue: #4967ea; --soft: #f5f7fb; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: #fff; color: var(--ink); font: 15px/1.8 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .topbar { border-bottom: 1px solid var(--line); padding: 14px max(24px, calc((100vw - 1100px)/2)); font-size: 14px; font-weight: 650; color: var(--blue); }
+    .layout { display: grid; grid-template-columns: minmax(0, 780px) 190px; gap: 64px; max-width: 1100px; margin: 0 auto; padding: 44px 24px 96px; }
+    main { min-width: 0; }
+    aside { position: sticky; top: 36px; align-self: start; border-left: 1px solid var(--line); padding-left: 18px; font-size: 13px; }
+    aside strong { display: block; margin-bottom: 12px; color: var(--muted); }
+    aside a { display: block; margin: 8px 0; color: var(--muted); text-decoration: none; }
+    aside a:hover { color: var(--blue); }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 750; letter-spacing: .06em; }
+    h1 { margin: 12px 0 10px; font-size: clamp(30px, 4vw, 40px); line-height: 1.3; letter-spacing: -.025em; }
+    .lead { margin: 0 0 20px; color: #445066; font-size: 17px; line-height: 1.8; }
+    h2 { margin: 54px 0 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 23px; line-height: 1.4; }
+    h3 { margin: 32px 0 12px; font-size: 18px; }
+    p, ul, ol { margin: 12px 0; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 7px 0; }
+    strong { font-weight: 670; }
+    .notice { margin: 22px 0; padding: 14px 18px; background: #eef3ff; border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; color: #35508a; }
+    .note { margin: 20px 0; padding: 13px 16px; background: var(--soft); border-radius: 8px; color: #4d5b70; }
+    .table-wrap { margin: 18px 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; min-width: 590px; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 11px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { background: var(--soft); white-space: nowrap; font-weight: 670; }
+    tr:last-child td { border-bottom: 0; }
+    figure { margin: 26px 0; }
+    figure img { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 9px; }
+    figcaption { margin-top: 7px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 900px) { .layout { display: block; } aside { display: none; } }
+    @media (max-width: 600px) { .layout { padding: 28px 18px 64px; } .topbar { padding: 13px 18px; } h2 { margin-top: 40px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">EngageLab MA · 功能介绍</header>
+  <div class="layout">
+    <main>
+      <div class="eyebrow">功能预览</div>
+      <h1>旅程 A/B 测试</h1>
+      <p class="lead">在同一条用户旅程中，按设定比例将用户分配到不同分支，比较消息内容、触达渠道、发送时机或整条后续路径的效果，再根据数据调整后续用户的分配比例。</p>
+      <div class="notice">本功能即将推出。功能开放时间及最终界面以正式上线为准。</div>
+
+      <section id="scenarios">
+        <h2>适用场景</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>想了解的问题</th><th>旅程搭建示例</th></tr></thead>
+          <tbody>
+            <tr><td>哪种内容效果更好？</td><td>分支 A 发送优惠券文案，分支 B 发送免运费文案。</td></tr>
+            <tr><td>哪种触达方式更有效？</td><td>分支 A 发送 App Push，分支 B 发送 Email。</td></tr>
+            <tr><td>多触点是否优于单触点？</td><td>分支 A 只发送一条消息，分支 B 在等待后追加一条消息。</td></tr>
+            <tr><td>发消息是否比不发更有效？</td><td>一个分支发送消息，另一个分支直接连接结束组件。</td></tr>
+          </tbody>
+        </table></div>
+        <p>分支可以连接旅程现有组件，不限于单条消息；无需单独创建多条旅程来比较不同方案。</p>
+        <figure><img src="./images/canvas-ab-branches.png" alt="旅程画布中的 A/B 测试组件和三个分支" width="620" height="295"><figcaption>画布示例：不同分支可连接不同路径。图中数据为演示数据。</figcaption></figure>
+      </section>
+
+      <section id="setup">
+        <h2>如何配置</h2>
+        <ol>
+          <li>在用户旅程画布中，从「操作」组件中添加 <strong>A/B 测试</strong>。</li>
+          <li>设置分支名称和分配比例。一个组件支持 <strong>2–10 个分支</strong>，默认两个分支各占 50%；各分支比例之和须为 <strong>100%</strong>。</li>
+          <li>为每个分支连接后续组件，并确保每条路径最终连接到结束组件。不需要发送消息的分支可直接连接结束组件。</li>
+          <li>如需比较转化效果，在旅程中配置<strong>转化统计</strong>及转化截止期；如需比较收入，配置<strong>收入统计</strong>。A/B 测试沿用旅程的统计条件，无需为每个分支重复配置。</li>
+          <li>检查配置并发布旅程。首次发布时，每个分支的比例都须大于 0%。</li>
+        </ol>
+        <figure><img src="./images/ab-config-drawer.png" alt="A/B 测试分支名称、分配比例和备注的配置界面" width="1440" height="813"><figcaption>配置示例：设置分支名称、比例及备注。实际界面以正式上线版本为准。</figcaption></figure>
+        <p>同一用户多次到达同一个 A/B 测试组件时，在<strong>分配比例不变</strong>的情况下会进入同一分支；不同 A/B 测试组件分别分配。</p>
+
+        <h3>运行中调整比例</h3>
+        <p>旅程运行后，您可以修改分支名称和比例，但不能增加或删除分支。将某个分支设为 <strong>100%</strong>、其他分支设为 <strong>0%</strong>，即可让此后到达的用户只走该分支。调整只影响后续到达，不会让已进入分支的用户改走其他路径；如果用户之后再次到达组件，比例变化可能改变其分支归属。</p>
+        <div class="note"><strong>建议：</strong>对比期间尽量保持分配比例稳定。决定采用哪个方案后，再调整比例；历史数据不会因调整而重新开始统计。</div>
+      </section>
+
+      <section id="results">
+        <h2>查看测试结果</h2>
+        <p>旅程运行后，可以在画布上查看各分支累计的进入和转化数据，也可以进入旅程的<strong>数据统计 → A/B 测试</strong>页签查看详情：</p>
+        <ul>
+          <li>选择 A/B 测试组件和分支，按日期范围查看趋势与汇总；支持按天或小时查看明细。</li>
+          <li>对比各分支的进入、转化、转化率，以及已配置的收入指标；可导出详细数据。</li>
+          <li>默认按<strong>人次</strong>查看，也可切换为按<strong>人数</strong>查看。同一用户在所选范围内多次进入时，按人次记录每次进入，按人数去重计算。</li>
+        </ul>
+
+        <h3>指标如何计算</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>指标</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td>进入人次</td><td>用户每到达一次 A/B 测试组件，计入所走分支 1 次。</td></tr>
+            <tr><td>转化人次</td><td>用户到达后，在旅程设置的转化截止期内完成转化，计入该次到达所在分支；同一次到达最多计 1 次转化。</td></tr>
+            <tr><td>转化率</td><td>转化人次 ÷ 进入人次；切换到按人数时，使用转化人数 ÷ 进入人数。</td></tr>
+            <tr><td>收入次数与收入金额</td><td>在统计窗口内，归属该次到达的每笔收入事件均计入；金额为这些收入的合计。</td></tr>
+          </tbody>
+        </table></div>
+        <p>如果同一用户再次到达组件，会产生新的一次进入。后续转化或收入归属到<strong>事件发生前最近一次到达</strong>所在的分支，不会同时计入该组件的两次到达。按人数查看时，同一用户在所选范围内去重；收入金额不会因切换查看方式而改变。</p>
+        <div class="note"><strong>日期说明：</strong>进入、归属该次进入的转化和收入均按<strong>到达日期</strong>展示。因此，最近几天的转化和收入可能随着转化截止期内的新事件继续增加。</div>
+        <div class="note"><strong>与消息统计的区别：</strong>A/B 测试衡量的是用户进入某个<strong>分支后的效果</strong>，即使该分支没有发送消息，也可以观察其转化；消息组件的数据用于查看具体消息的发送与互动表现。两处转化的归属方式不同，数值不一定相同。</div>
+      </section>
+
+      <section id="tips">
+        <h2>使用建议</h2>
+        <ul>
+          <li>在开始测试前确定主要比较目标，并保证各分支使用同一套旅程转化条件。</li>
+          <li>对比不同渠道时，优先查看转化和收入；不同渠道的打开或点击指标不宜直接比较。</li>
+          <li>观察完整转化截止期后再判断结果，避免将仍在产生转化的新近进入用户误判为未转化。</li>
+          <li>若测试过程中调整了比例或分支内容，解读汇总数据时请考虑调整前后的差异。</li>
+        </ul>
+      </section>
+    </main>
+    <aside aria-label="页面目录"><strong>本页内容</strong><a href="#scenarios">适用场景</a><a href="#setup">如何配置</a><a href="#results">查看测试结果</a><a href="#tips">使用建议</a></aside>
+  </div>
+</body>
+</html>
